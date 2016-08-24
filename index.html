@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        .glyphicon-star{
+            font-size: 25px;
+            line-height: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="star-container">
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js"></script>
+<script>
+    /**
+     * add star icon into page -> ok
+     * add simple css for star -> ok
+     * when user hover icon = change color -> ok
+     * make 5 star -> ok
+     * add index for each star -> ok
+     * when user hover a star...example user hover star index 2 = 0 1 2 will change color -> ok
+     * use container for stars -> ok
+     * dynamic create star depend on user config -> ok
+     * let user setup enableHover false or true -> ok
+     * callback when user done rating -> ok
+     * when user done rating...freeze hover -> ok
+     * reflactor to OOP -> ok
+     */
+
+    function StarRating($container, userConfig){
+        this.$container = $container;
+        this.config = {};
+        this.stars = null;
+        this.template = '<span class="glyphicon glyphicon-star star"></span>';
+        this.defaultConfig = {
+            maxStar: 5,
+            enableHover: true,
+            onRatingComplete: null
+        };
+        this.setConfig(userConfig);
+        this.addEvent();
+        this.createStarElement();
+    }
+    StarRating.prototype = {
+        constructor: StarRating,
+        createStarElement: function(){
+            var starElements = [];
+            var i=0, size=this.config.maxStar;
+            for(i; i<size; ++i){
+                var $star = $(this.template);
+                $star.data('index', i);
+                starElements.push($star);
+            }
+            this.$container.append(starElements);
+            this.stars = this.$container.find('.star');
+        },
+        setConfig: function(userConfig){
+            this.config = _.defaults(userConfig, this.defaultConfig);
+        },
+        addEvent: function() {
+            var self = this;
+            self.$container.on('mouseenter', '.star', function (e) {
+                if(self.config.enableHover) {
+                    var $this = $(this);
+                    var currentIndex = $this.data('index');
+                    $this.css('color', 'orange').prevAll().css('color', 'orange');
+                }
+            });
+            self.$container.on('mouseleave', '.star', function (e) {
+                if(self.config.enableHover) {
+                    self.stars.css('color', 'black');
+                }
+            });
+            self.$container.on('mousedown', '.star', function (e) {
+                if(_.isFunction(self.config.onRatingComplete)){
+                    self.config.onRatingComplete();
+                }
+                self.config.enableHover = false;
+            });
+        }
+    };
+    var $container = $('.star-container');
+    new StarRating($container, {
+        maxStar: 10
+    });
+</script>
+</body>
+</html>
